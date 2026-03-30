@@ -64,7 +64,7 @@ Use this table to decide which guardrail layer to use for your requirements:
 | Requirement | Recommended Approach | Reason |
 |-------------|---------------------|--------|
 | Detect known PII formats (SSN, credit cards, emails) | Regex with builtins | Fast, deterministic, no external dependencies |
-| Block hate speech, violence, harmful content | External moderation (OpenAI, Bedrock) | ML-based detection trained for content safety |
+| Block hate speech, violence, harmful content | External moderation (OpenAI, Bedrock, Azure) | ML-based detection trained for content safety |
 | Organization-specific restricted terms | Regex with custom patterns | Simple pattern matching for known strings |
 | Named entity recognition (people, orgs, places) | Custom webhook | Requires NER models not available in built-in options |
 | HIPAA, PCI-DSS, or other compliance requirements | Layered approach | Combine regex + external moderation + custom validation |
@@ -99,6 +99,7 @@ Check out the following guides to build your guardrail system.
   {{< card link="../moderation" title="OpenAI moderation" description="Use the OpenAI Moderation API to detect harmful content across categories including hate, harassment, and violence." >}}
   {{< card link="../bedrock-guardrails" title="AWS Bedrock Guardrails" description="Apply AWS Bedrock Guardrails to filter LLM requests and responses for policy-violating content." >}}
   {{< card link="../google-model-armor" title="Google Model Armor" description="Apply Google Cloud Model Armor templates to sanitize LLM requests and responses." >}}
+  {{< card link="../azure-content-safety" title="Azure AI Content Safety" description="Apply Azure AI Content Safety to filter LLM requests and responses for harmful content, blocklist violations, and jailbreak attempts." >}}
   {{< card path="/llm/guardrails/webhook/" title="Custom webhooks" description="Integrate your own content safety logic by forwarding requests and responses to a custom webhook." >}}
   {{< card link="../multi-layer" title="Multi-layered guardrails" description="Run prompt guards in sequence, creating defense-in-depth protection." >}}
 {{< /cards >}}
