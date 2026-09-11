@@ -413,7 +413,7 @@ _Appears in:_
 | `vertexai` _[VertexAISettings](#vertexaisettings)_ | Provider-specific settings for Vertex AI. |  | Optional: \{\} <br /> |
 | `bedrock` _[BedrockSettings](#bedrocksettings)_ | Provider-specific settings for Amazon Bedrock. |  | Optional: \{\} <br /> |
 | `custom` _[CustomProviderSettings](#customprovidersettings)_ | Provider-specific settings for a custom provider. |  | Optional: \{\} <br /> |
-| `baseURL` _[LongString](#longstring)_ | BaseURL overrides the provider address and base path prefix. It must use the<br />http or https scheme. Backend policies may override the default TLS<br />configuration. Query parameters, fragments, and user info are not supported. |  | Format: uri <br />MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `baseURL` _[LongString](#longstring)_ | BaseURL overrides the provider address and base path prefix. It must use the<br />http or https scheme. Backend policies may override the default TLS<br />configuration. Query parameters, fragments, and user info are not supported.<br />The URL path is the upstream base path and defaults to / when omitted.<br />Provider-specific endpoint paths are appended to this base path.<br />For example, https://api.openai.com/v1 sends completions to /v1/chat/completions,<br />while https://api.openai.com sends them to /chat/completions. |  | Format: uri <br />MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `policies` _[ModelPolicies](#modelpolicies)_ | Policies applied to this concrete model. |  | Optional: \{\} <br /> |
 | `virtualModel` _[VirtualModel](#virtualmodel)_ | Request-time routing among concrete AgentgatewayModel resources. |  | ExactlyOneOf: [weighted failover conditional] <br />Optional: \{\} <br /> |
 
@@ -988,6 +988,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `scopes` _string array_ | Scopes requested for the Azure access token. When omitted, the scope is<br />inferred from the backend hostname. Managed Identity supports exactly one<br />scope. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source for Azure credentials, defaulting to a Kubernetes<br />`Secret`. The default Secret resolver expects `clientID`, `tenantID`, and<br />`clientSecret` keys. |  | Optional: \{\} <br /> |
 | `managedIdentity` _[AzureManagedIdentity](#azuremanagedidentity)_ | Managed identity authentication settings. Leave this object empty to use<br />the system-assigned identity. To use a user-assigned identity, set one of<br />`clientId`, `objectId`, or `resourceId`. |  | AtMostOneOf: [clientId objectId resourceId] <br />Optional: \{\} <br /> |
 | `workloadIdentity` _[AzureWorkloadIdentity](#azureworkloadidentity)_ | Workload identity authentication settings. Uses the federated token and<br />Azure env vars projected into the data plane pod. Recommended on AKS with<br />Workload Identity enabled. |  | Optional: \{\} <br /> |
@@ -1368,7 +1369,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `certificateSource` _[BackendTLSCertificateSource](#backendtlscertificatesource)_ | Source for the gateway's client identity and trust roots (`Inline` default, or `SPIFFE`). | Inline | Optional: \{\} <br /> |
 | `mtlsCertificateRef` _[LocalSecretObjectRef](#localsecretobjectref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`). An<br />optional `ca.cert`, if present, verifies the server certificate, but<br />`caCertificateRefs` takes priority. If unspecified, no client certificate<br />is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
-| `caCertificateRefs` _[LocalCACertificateRef](#localcacertificateref) array_ | CA certificate source to use to verify the server certificate. Omitted kind<br />and `ConfigMap` select a ConfigMap; `Secret` selects a Secret. The `ca.crt`<br />key is required. If unset, the system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
+| `caCertificateRefs` _[LocalCACertificateRef](#localcacertificateref) array_ | CA certificate source to use to verify the server certificate. Omitted kind<br />and `ConfigMap` select a ConfigMap; `Secret` selects a Secret. The bundle is<br />read from the `ca.crt` key unless `key` names a different one. If unset, the<br />system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | Originates TLS but skips verification of the backend's certificate<br />WARNING: insecure; only use if the risks are understood<br />Modes:<br />* `All` disables all TLS verification<br />* `Hostname` trusts the CA certificate but ignores hostname/SAN mismatches.<br />  Still insecure; prefer `verifySubjectAltNames` where possible. |  | Optional: \{\} <br /> |
 | `sni` _[SNI](#sni)_ | Server Name Indicator (`SNI`) to use in the TLS<br />handshake. If unset, the `SNI` is automatically set based on the<br />destination hostname. |  | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
 | `verifySubjectAltNames` _[ShortString](#shortstring) array_ | Subject Alternative Names (`SAN`)<br />to verify in the server certificate.<br />If not present, the destination hostname is automatically used. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
@@ -2971,6 +2972,25 @@ _Appears in:_
 | `Permissive` | Requests are never rejected. This is useful for usage of claims in later steps (authorization, logging, etc).<br />Warning: this allows requests without a JWT token!<br /> |
 
 
+#### JWTClaim
+
+_Underlying type:_ _string_
+
+JWTClaim is a JWT claim whose presence can be required during validation.
+
+
+
+_Appears in:_
+- [JWTValidationOptions](#jwtvalidationoptions)
+
+| Field | Description |
+| --- | --- |
+| `exp` |  |
+| `nbf` |  |
+| `aud` |  |
+| `sub` |  |
+
+
 #### JWTMCPConfig
 
 
@@ -3005,6 +3025,25 @@ _Appears in:_
 | `issuer` _[ShortString](#shortstring)_ | IdP that issued the JWT. This corresponds to the<br />`iss` claim ([RFC 7519 §4.1.1](https://tools.ietf.org/html/rfc7519#section-4.1.1)). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `audiences` _string array_ | Allowed audiences that are allowed<br />access. This corresponds to the `aud` claim<br />([RFC 7519 §4.1.3](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3)).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `jwks` _[JWKS](#jwks)_ | JSON Web Key Set used to validate the signature of the<br />JWT. |  | ExactlyOneOf: [remote inline] <br />Required: \{\} <br /> |
+| `validation` _[JWTValidationOptions](#jwtvalidationoptions)_ | Additional JWT claim presence requirements. Defaults to requiring `exp`.<br />Issuer validation always requires `iss`; a non-empty audiences list also<br />requires `aud`, regardless of these options. An empty `requiredClaims`<br />list removes only the additional presence requirements. Expiration is<br />still checked whenever `exp` is present. |  | Optional: \{\} <br /> |
+
+
+#### JWTValidationOptions
+
+
+
+JWTValidationOptions controls claim presence requirements in addition to
+those imposed by issuer and audience validation.
+
+
+
+_Appears in:_
+- [JWTProvider](#jwtprovider)
+- [MCPAuthentication](#mcpauthentication)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `requiredClaims` _[JWTClaim](#jwtclaim)_ | Additional claims that must be present in the token payload.<br />Recognized values: `exp`, `nbf`, `aud`, `sub`.<br />Defaults to `["exp"]` when omitted. An empty list adds no requirements<br />beyond `iss`, which is always required, and `aud`, which is required<br />when a non-empty audiences list is configured. Expiration is still<br />checked whenever `exp` is present. |  | MaxItems: 4 <br />Optional: \{\} <br /> |
 
 
 #### JwtSignAuth
@@ -3180,7 +3219,7 @@ _Appears in:_
 
 
 LocalCACertificateRef references a same-namespace CA certificate source.
-An omitted kind defaults to ConfigMap.
+An omitted kind defaults to ConfigMap, and an omitted key to `ca.crt`.
 
 
 
@@ -3191,6 +3230,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name of the referenced CA certificate source. |  | Required: \{\} <br /> |
 | `kind` _string_ | Kind of the referenced CA certificate source. Omitted defaults to ConfigMap. | ConfigMap | Enum: [ConfigMap Secret] <br />Optional: \{\} <br /> |
+| `key` _string_ | Key within the referenced source holding the PEM-encoded CA bundle.<br />Omitted defaults to `ca.crt`. | ca.crt | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$` <br />Optional: \{\} <br /> |
 
 
 #### LocalPolicyTargetReference
@@ -3414,6 +3454,7 @@ _Appears in:_
 | `audiences` _string array_ | Allowed audiences that are allowed<br />access. This corresponds to the `aud` claim<br />([RFC 7519 §4.1.3](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3)).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `jwks` _[RemoteJWKS](#remotejwks)_ | Remote JSON Web Key used to validate the signature of<br />the JWT. |  | ExactlyOneOf: [backendRef url] <br />Required: \{\} <br /> |
 | `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | Validation mode for JWT authentication. | Strict | Optional: \{\} <br /> |
+| `validation` _[JWTValidationOptions](#jwtvalidationoptions)_ | Additional JWT claim presence requirements. Defaults to requiring `exp`.<br />Issuer validation always requires `iss`; a non-empty audiences list also<br />requires `aud`, regardless of these options. An empty `requiredClaims`<br />list removes only the additional presence requirements. Expiration is<br />still checked whenever `exp` is present. |  | Optional: \{\} <br /> |
 | `clientId` _string_ | Client ID to use for short-circuiting Dynamic Client Registration.<br />If set, the gateway will not proxy registration requests to the IDP and instead return this client ID. |  | Optional: \{\} <br /> |
 | `clientSecretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Reference to a Kubernetes Secret holding the OAuth client secret of the app<br />registration identified by `clientId` (for example Entra ID confidential clients,<br />which require the secret at the token endpoint). The gateway injects it into the<br />token requests it proxies to the provider. Defaults to the `clientSecret` key;<br />override via `clientSecretRef.key`. |  | Optional: \{\} <br /> |
 
@@ -5083,7 +5124,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `request` _[Duration](#duration)_ | Timeout for an individual request from the gateway to a backend. This covers the time from when<br />the request first starts being sent from the gateway to when the full response has been received from the backend. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `request` _[Duration](#duration)_ | Maximum time allowed from the start of downstream request processing until response headers<br />are received. The response body is not included; use `responseIdle` to bound gaps between body frames. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `responseIdle` _[Duration](#duration)_ | Maximum time the response body may go without producing data. The window restarts on every<br />body frame, so this bounds the gap between frames rather than the total time a response may<br />take. It is what terminates a backend that stops producing data mid-stream without capping<br />how long a legitimately long response may run.<br />This complements Request rather than overlapping it: Request stops applying once the response<br />headers arrive, so it places no bound on how long the response body may take, and it cannot<br />distinguish a stalled stream from a slow one.<br />This does not apply to responses that switch protocols, so upgraded WebSocket connections and<br />CONNECT tunnels are never terminated by it. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 
 
 
@@ -5109,7 +5151,8 @@ _Appears in:_
 | `attributes` _[LogTracingAttributes](#logtracingattributes)_ | Customizations to the key-value pairs that are<br />included in the trace. |  | Optional: \{\} <br /> |
 | `resources` _[ResourceAdd](#resourceadd) array_ | Entity producing telemetry and resources<br />resources to be included in the trace. |  | Optional: \{\} <br /> |
 | `randomSampling` _[CELExpression](#celexpression)_ | Expression that determines the amount of random<br />sampling. Random sampling will initiate a new trace span if the incoming<br />request does not have a trace initiated already. This should evaluate to<br />a float between `0.0` and `1.0`, or a boolean (`true` or `false`). If<br />unspecified, random sampling is disabled. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `clientSampling` _[CELExpression](#celexpression)_ | Expression that determines the amount of client<br />sampling. Client sampling determines whether to initiate a new trace<br />span if the incoming request does have a trace already. This should<br />evaluate to a float between `0.0` and `1.0`, or a boolean (`true` or<br />`false`). If unspecified, client sampling is `100%` enabled. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `clientSampling` _[CELExpression](#celexpression)_ | Expression that determines the amount of client<br />sampling. Client sampling determines whether to initiate a new trace<br />span if the incoming request does have a trace already. This only<br />applies when that trace is sampled (`-01`); use `parentNotSampled` for<br />requests whose trace is not. This should<br />evaluate to a float between `0.0` and `1.0`, or a boolean (`true` or<br />`false`). If unspecified, client sampling is `100%` enabled. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `parentNotSampled` _[CELExpression](#celexpression)_ | Expression that determines whether to trace a request that arrives with<br />a `traceparent` whose sampled flag is unset (`-00`), meaning the client<br />asked for it not to be traced. When this is `true` the request is traced<br />anyway, and `-01` is sent upstream so downstream services trace it too.<br />This should evaluate to a float between `0.0` and `1.0`, or a boolean<br />(`true` or `false`). If unspecified, the client's choice is honored and<br />the request is not traced.<br />Only one of `randomSampling`, `clientSampling` and `parentNotSampled`<br />applies to any given request; the incoming `traceparent` decides which. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `filter` _[CELExpression](#celexpression)_ | Expression that determines whether a sampled span is exported.<br />This uses keep semantics: spans are exported only when the expression<br />evaluates to `true`. If unspecified, all sampled spans are exported. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
